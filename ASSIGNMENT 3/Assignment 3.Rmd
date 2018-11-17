@@ -1,0 +1,123 @@
+---
+title: "CMTH642 - Assignment 3"
+author: "Mohammed Amir"
+date: "December 16, 2016"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gmodels")
+#install.packages("class")
+library(class)
+library(gmodels)
+library(corrplot)
+```
+
+Upload data
+```{r}
+wine <- read.csv(file="D:/Big Data/CMTH642 - DATA ANALYTICS ADVANCED METHODS/ASSIGNMENT 3/winequality-white.csv",head=TRUE,sep=";")
+```
+
+
+# 1. Check data characteristics. Is there missing data?
+```{r}
+#is.na(wine)
+wine[!complete.cases(wine),]
+str(wine)
+```
+
+# 2. What is the correlation between the attributes other than wine quality?
+```{r}
+## remove the wine quality attribute
+newdf <- wine[-12]
+head(newdf)
+
+## Correlate wine attributes excluding quality
+wine_correlation <- cor(newdf)
+wine_correlation
+
+## plot wine attribute correlation
+corrplot(wine_correlation, method="circle")
+
+```
+
+# 3. Graph the distribution of wine quality.
+```{r}
+hist(wine$quality)
+
+```
+
+# 4. Reduce the levels of rating for quality to three levels as high, medium and low
+```{r}
+rating <- function(quality)
+{
+    if(quality <= 4)
+    {
+        print ("Low")
+    }
+        else
+        {
+            if(quality >= 5 && quality <= 7)
+            {
+              print ("Medium")  
+            }
+              else
+                {
+                    print ("High")
+                }
+          }
+}
+## add rating attribute to the wine data frame
+wine$rating <- mapply(rating,wine$quality)
+head(wine)
+
+
+```
+
+# 5. Normalize the data set.
+```{r}
+# remove quality attribute from wine data frame before normalization as it is not numeric attribute
+new_wine_attribute <- wine[-12]
+
+# Normaization function
+normalize <- function(x) 
+    {
+      return ( 
+                ( (x - min(x)) / (max(x) - min(x)))
+              ) 
+    }
+
+dfNorm <- as.data.frame(lapply(new_wine_attribute[1:11], normalize))
+head(dfNorm)
+
+```
+
+# 6 Divide the data to training and testing groups.
+```{r}
+
+dfNorm_train <- dfNorm[1:3265,]    ## two third of data set for training
+dfNorm_test  <- dfNorm[3266:4898,] ## one third of data set for testing
+nrow(dfNorm_train)
+nrow(dfNorm_test)
+
+```
+
+# 7 Use the KNN algorithm to predict the quality of wine using its attributes.
+```{r}
+
+
+dfNorm_train_labels <- wine[1:3265, 12]    ## predict the quality in column 12
+dfNorm_test_labels  <- wine[3266:4898,12] ## predict the quality in column 12
+
+prediction <- knn(train = dfNorm_train, test = dfNorm_test,cl = dfNorm_train_labels, k=10)
+```
+
+# 8 Evaluate the model performance.
+```{r}
+#install.packages("gmodels")
+
+CrossTable(x=dfNorm_test_labels, y = prediction, prop.chisq=FALSE)
+
+```
+

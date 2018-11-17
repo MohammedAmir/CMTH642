@@ -1,0 +1,148 @@
+---
+  title: "CMTH642 - Assignment #2 "
+author: "Mohammed Amir"
+date: "November 26, 2016"
+output: word_document
+---
+
+
+# Read the csv files in the folder
+
+```r
+USDAClean <- read.csv(file="D:/Big Data/CMTH642 - DATA ANALYTICS ADVANCED METHODS/ASSIGNMENT 2/USDAClean_MohammedAmir.csv",head=TRUE,sep=",")
+```
+
+# 1. Create a visualization to illustrate the distribution of values for Total Fat, Protein and Carbohydrate. (12 p)
+
+```r
+Protein <- USDAClean$Protein
+Carbohydrate <- USDAClean$Carbohydrate
+TotalFat <- USDAClean$TotalFat
+
+layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+hist(Protein)
+hist(Carbohydrate)
+hist(TotalFat)
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
+
+# 2. Create a visualization to illustrate the relationship between a food's Total Fat content and its calorie content. (12 p)
+
+```r
+Calories <- USDAClean$Calories
+plot (TotalFat, Calories,  col = c("green", "red"), xlab="TotalFat", ylab="Calories", main="Total Fat vs Calories realtionship graphy")
+legend("topright", legend=c("TotalFat", "Calories"), col=c("green", "red"), lty=1:2, cex=1, box.lty=0)
+```
+
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+
+# 3. Create a logistic regression model (18 p)
+
+```r
+model <- glm (HighCalories ~ Protein + TotalFat + Sodium, data=USDAClean, family = binomial, )
+summary(model)
+```
+
+```
+## 
+## Call:
+## glm(formula = HighCalories ~ Protein + TotalFat + Sodium, family = binomial, 
+##     data = USDAClean)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.4815  -0.6844  -0.5700   0.5219   2.5556  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(>|z|)    
+## (Intercept) -1.3590805  0.0804296 -16.898  < 2e-16 ***
+## Protein     -0.0173963  0.0034707  -5.012 5.38e-07 ***
+## TotalFat     0.2157379  0.0064871  33.256  < 2e-16 ***
+## Sodium      -0.0005878  0.0001176  -4.996 5.85e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 8971.1  on 6612  degrees of freedom
+## Residual deviance: 6036.4  on 6609  degrees of freedom
+## AIC: 6044.4
+## 
+## Number of Fisher Scoring iterations: 6
+```
+
+```r
+model.pred <- predict(model, type="response")
+summary (model.pred)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+## 0.03817 0.17290 0.25460 0.41400 0.64310 1.00000
+```
+# 4. Which independent variable is not significant? (10 p)
+
+```r
+c(1:10)
+```
+
+```
+##  [1]  1  2  3  4  5  6  7  8  9 10
+```
+
+
+# 5. Which independent variable has the strongest positive predictive power in the model? (10 p)
+
+```r
+# Based on coefficient number, total fat has the highest positive value indicating that the total fat has the hightest positive rate of change
+for change of value in y. 
+```
+
+```
+## Error: <text>:2:5: unexpected symbol
+## 1: # Based on coefficient number, total fat has the highest positive value indicating that the total fat has the hightest positive rate of change
+## 2: for change
+##        ^
+```
+
+# 6. Create a script for a HealthCheck function to detect unhealthy foods. (18 p) 
+
+```r
+y <- function(sodium, sugar, fat)
+{
+    if(sodium == 0)
+    {
+        print ("Low Sodium , Passed")
+    }
+        else
+        {
+            if(sugar == 0 && sodium == 1)
+            {
+              print ("Low Sugar , Passed")  
+            }
+              else
+                {
+                  if(fat == 0 && sugar == 1 && sodium == 1)
+                    {
+                      print ("Low Fat , Passed")  
+                    }
+                      else
+                        {
+                          print ("Food Failed")
+                        }
+                
+                }
+          }
+  }
+  
+y (1,0,1)
+```
+
+```
+## [1] "Low Sugar , Passed"
+```
+# 7. Add a new column called HealthCheck to the USDAclean data frame using the output of the function. (10 p)
+
+# 8. How many foods in the USDAclean data frame fail the HealthCheck? (10 p)
+

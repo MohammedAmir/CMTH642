@@ -1,0 +1,123 @@
+---
+title: "CMTH642 Data Analytics Advanced Method - Assignment 3"
+author: "Mohammed Amir"
+date: "December 16, 2016"
+output: word_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(class)
+library(gmodels)
+library(corrplot)
+```
+Upload data
+```{r}
+wine_df <- read.csv(file="D:/Big Data/CMTH642 - DATA ANALYTICS ADVANCED METHODS/ASSIGNMENT 3/winequality-white.csv",head=TRUE,sep=";")
+```
+# 1. Check data characteristics. Is there missing data?
+```{r}
+is.na(wine_df)
+wine_df[!complete.cases(wine_df),]
+str(wine_df)
+summary(wine_df)
+head(wine_df)
+table(wine_df$quality)
+
+
+```
+
+# 2. What is the correlation between the attributes other than wine_df quality?
+```{r}
+## remove the wine_df quality attribute
+new_wine_df <- wine_df[-12]
+head(new_wine_df)
+
+## Correlate wine_df attributes excluding quality
+wine_df_correlation <- cor(new_wine_df)
+wine_df_correlation
+
+## plot wine_df attribute correlation
+corrplot(wine_df_correlation, method="circle")
+
+```
+
+# 3. Graph the distribution of wine quality.
+```{r}
+hist(wine_df$quality)
+```
+
+# 4. Reduce the levels of rating for quality to three levels as high, medium and low
+```{r}
+rating <- function(quality)
+{
+    if(quality <= 4)
+    {
+        print ("Low")
+    }
+        else
+        {
+            if(quality >= 5 && quality <= 7)
+            {
+              print ("Medium")  
+            }
+              else
+                {
+                    print ("High")
+                }
+          }
+}
+## add rating attribute to the wine_df data frame
+wine_df$rating <- mapply(rating,wine_df$quality)
+
+# Total Count for each rating
+ table(wine_df$rating)
+```
+
+
+# 5. Normalize the data set.
+```{r}
+# remove quality attribute from wine dataframe before normalization as it is not numeric attribute
+new_wine_df_attribute <- wine_df[-12]
+
+# Normaization function
+normalize <- function(x) 
+    {
+      return ( 
+                ( (x - min(x)) / (max(x) - min(x)))
+              ) 
+    }
+winedf_Norm <- as.data.frame(lapply(new_wine_df_attribute[1:11], normalize))
+head(winedf_Norm)
+summary(winedf_Norm)
+```
+
+# 6 Divide the data to training and testing groups
+```{r}
+ ## Randomly divide the datasett to two sections 67% to 33%  
+ind <- sample(2, nrow(winedf_Norm), replace=TRUE, prob=c(0.67, 0.33))
+winedf_training <- winedf_Norm[ind==1,] ## assign 0.67 to training
+winedf_test <- winedf_Norm[ind==2, ]     ## assign 0.33 to test 
+
+nrow(winedf_training)  # number of rows in training dataset
+nrow(winedf_test)      # number of rows in testing dataset
+```
+
+# 7 Use the KNN algorithm to predict the quality of wine_df using its attributes.
+```{r}
+
+winedf_training_Labels <- new_wine_df_attribute[ind==1, 12] ## Create a train labels
+winedf_test_Labels     <- new_wine_df_attribute[ind==2, 12]  ## Create a test labels
+
+#Apply a KNN function for k = 5
+wine_prediction <- knn(train = winedf_training, test = winedf_test, cl = winedf_training_Labels, k=5)
+
+```
+
+# 8 Evaluate the model performance.
+```{r}
+CrossTable(x=winedf_test_Labels, y = wine_prediction, prop.chisq=FALSE)
+```
+
